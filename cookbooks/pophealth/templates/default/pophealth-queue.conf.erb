@@ -1,0 +1,10 @@
+#start on startup
+#stop on shutdown
+
+chdir /opt/pophealth/deploy/current
+respawn
+
+script 
+   exec sudo -u pophealth -i QUEUE=* "cd /opt/pophealth/deploy/current;  /usr/local/rvm/bin/pop_bundle exec rake resque:work" >> /tmp/POPQ 2>&1
+end script
+
