@@ -13,6 +13,7 @@ gem install ohai chef --no-rdoc --no-ri --verbose &>> $log
 mkdir -p /var/chef/cache
 mkdir -p /opt/pophealth-chef
 git clone https://github.com/orb/pophealth-chef.git /opt/pophealth-chef &>> $log
+(cd /opt/pophealth-chef; git checkout test) &>> $log
 ln -s /opt/pophealth-chef/cookbooks /var/chef/cookbooks
 ln -s /opt/pophealth-chef/roles /var/chef/roles 
 mkdir /etc/chef
@@ -34,5 +35,7 @@ cat <<EOF > /etc/chef/node.json
 }
 EOF
 
-chef-solo &>> $log
+echo == starting chef-solo at $(date) &>>$log
+chef-solo -l debug &>> $log
+echo == ending chef-solo at $(date) &>>$log
 

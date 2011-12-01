@@ -18,7 +18,7 @@ if ruby_version.size > 0
         source /etc/profile.d/rvm.sh
         rvm install #{ruby_version}
     EOH
-    not_if "rvm list | grep #{ruby_version}"
+    not_if "/usr/local/rvm/bin/rvm list | grep #{ruby_version}"
   end
 
   #bash "installing #{ruby_version}" do

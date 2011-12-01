@@ -66,11 +66,28 @@ bash "install_measures" do
     # action :nothing
 end
 
+template "/etc/init/pophealth.conf" do
+    mode "0755"
+    source "pophealth.conf.erb"
+end
+
+link "/etc/init.d/pophealth" do
+  to "/lib/init/upstart-job"
+end
+
+template "/etc/init/pophealth-queue.conf" do
+    mode "0755"
+    source "pophealth-queue.conf.erb"
+end
+
+link "/etc/init.d/pophealth-queue" do
+  to "/lib/init/upstart-job"
+end
+
 deploy_revision "/opt/pophealth/deploy" do
     scm_provider Chef::Provider::Git
     repository "git://github.com/pophealth/popHealth.git"
-    #repo "file:///vagrant/repos/popHealth"
-    revision "HEAD"
+    revision "master"
 
     user "pophealth"
     group "pophealth"
@@ -100,38 +117,23 @@ bash "pophealth admin" do
     code <<-EOH
         source /etc/profile.d/rvm.sh
         rvm use 1.9.2@pophealth --create
-        bundle exec rake admin:create_admin_account
+        ruby -e 'puts File.expand_path("~")'
+        bundle exec rake admin:create_admin_account --trace
     EOH
 
     not_if 'mongo pophealth-development --eval "printjson(db.getCollectionNames())" | grep users'
     action :run
 end
 
-template "/etc/init/pophealth.conf" do
-    mode "0755"
-    source "pophealth.conf.erb"
-end
-
-link "/etc/init.d/pophealth" do
-  to "/lib/init/upstart-job"
-end
-
-template "/etc/init/pophealth-queue.conf" do
-    mode "0755"
-    source "pophealth-queue.conf.erb"
-end
-
-link "/etc/init.d/pophealth-queue" do
-  to "/lib/init/upstart-job"
-end
 
 service "pophealth" do
-    action :start
+    provider Chef::Provider::Service::Upstart
     supports :status => true, :start => true, :stop => true, :restart => true
+    action [:start, :enable]
 end
 
 service "pophealth-queue" do
-    action :start
+    provider Chef::Provider::Service::Upstart
     supports :status => true, :start => true, :stop => true, :restart => true
+    action [:start, :enable]
 end
-
